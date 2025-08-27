@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>La Teoría de la Economía</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    margin:0; font-family: Arial, sans-serif; background: #FF6E59; display:flex; justify-content:center; align-items:center; height:100vh;
+  }
+  #menu, #gameContainer { width: 90%; max-width: 800px; text-align:center; }
+  #menu h1 { color: #41738A; font-family: 'Verdana', sans-serif; }
+  #game {
+    width:100%; max-width:800px; height:600px; background:#663E45; position:relative; margin:auto; border-radius:15px; overflow:hidden; border:4px solid #0C4684;
+  }
+  #player {
+    width:80px; height:80px; position:absolute; top:20px; left:calc(50% - 40px);
+    display:flex; justify-content:center; align-items:center; font-size:36px; transition:left 0.2s;
+  }
+  .plate {
+    width:45%; height:100px; position:absolute; color:#fff; display:flex; justify-content:center; align-items:center;
+    text-align:center; padding:10px; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; border:3px solid #866240;
+    transition: transform 0.3s, opacity 0.3s;
+  }
+  .plate.true { background:#28a745; left:2.5%; }
+  .plate.false { background:#dc261b; right:2.5%; }
+  #score { color:#41738A; font-size:24px; margin-bottom:10px; }
+  input, select, button { margin:5px; padding:8px; font-size:16px; border-radius:5px; }
+  button { cursor:pointer; background-color:#41738A; color:#FF6E59; border:none; font-weight:bold; }
+  #lostScreen {
+    position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8);
+    color:#FF6E59; font-size:32px; display:flex; justify-content:center; align-items:center; flex-direction:column; display:none; z-index:100;
+  }
+  #lostScreen button { margin-top:20px; background-color:#41738A; color:#FF6E59; }
+</style>
+</head>
+<body>
+<div id="menu">
+  <h1>La Teoría de la Economía</h1>
+  <input type="text" id="playerName" placeholder="Ingresa tu nombre">
+  <select id="playerColor">
+    <option value="⭐">Estrella</option>
+    <option value="❤️">Corazón</option>
+  </select>
+  <br>
+  <button onclick="startGame()">Comenzar</button>
+</div>
+
+<div id="gameContainer" style="display:none;">
+  <div id="score">Puntaje: 0</div>
+  <div id="game">
+    <div id="player"></div>
+    <div id="lostScreen">
+      <div>ooops, buen intento, empecemos de nuevo</div>
+      <button onclick="restartGame()">Volver al menú</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const game = document.getElementById('game');
+const player = document.getElementById('player');
+const scoreEl = document.getElementById('score');
+const lostScreen = document.getElementById('lostScreen');
+
+let playerName = "";
+let playerSymbol = "⭐";
+let score = 0;
+let currentQuestion = 0;
+
+const questions = [
+  { text: "El capitalismo defiende la propiedad privada.", answer: true },
+  { text: "El socialismo promueve la libre competencia sin regulación.", answer: false },
+  { text: "La teoría de Keynes propone estímulo fiscal en crisis.", answer: true },
+  { text: "La mano invisible fue propuesta por Karl Marx.", answer: false },
+  { text: "Adam Smith es conocido como el padre de la economía moderna.", answer: true },
+  { text: "El monetarismo fue desarrollado por Milton Friedman.", answer: true },
+  { text: "El mercantilismo defendía exportaciones mayores que importaciones.", answer: true },
+  { text: "El comunismo busca la abolición de la propiedad privada.", answer: true },
+  { text: "La escuela austríaca se centra en el control estatal de precios.", answer: false },
+  { text: "David Ricardo desarrolló la teoría de la ventaja comparativa.", answer: true },
+  { text: "La teoría clásica considera que los mercados tienden al equilibrio.", answer: true },
+  { text: "La macroeconomía estudia decisiones de empresas individuales.", answer: false },
+  { text: "John Maynard Keynes promovió la reducción del gasto público en crisis.", answer: false },
+  { text: "El neoliberalismo defiende menor intervención estatal en la economía.", answer: true },
+  { text: "El capitalismo permite la competencia de mercado.", answer: true },
+  { text: "El socialismo busca igualdad de resultados sin propiedad privada.", answer: true },
+  { text: "La escuela de Chicago se asocia con políticas de libre mercado.", answer: true },
+  { text: "El proteccionismo promueve la apertura total de comercio.", answer: false },
+  { text: "El PIB mide la riqueza producida en un país.", answer: true },
+  { text: "La teoría del valor trabajo fue propuesta por Karl Marx.", answer: true }
+];
+
+function startGame() {
+  const nameInput = document.getElementById('playerName').value.trim();
+  const colorInput = document.getElementById('playerColor').value;
+  if (!nameInput) { alert("Por favor ingresa tu nombre"); return; }
+
+  playerName = nameInput;
+  playerSymbol = colorInput;
+  player.textContent = playerSymbol;
+
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+  score = 0;
+  currentQuestion = 0;
+  scoreEl.textContent = `${playerName} - Puntaje: ${score}`;
+  lostScreen.style.display = 'none';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  if (currentQuestion >= questions.length) {
+    alert(`${playerName}, ¡completaste todas las preguntas! Puntaje final: ${score}`);
+    restartGame();
+    return;
+  }
+  const q = questions[currentQuestion];
+  document.querySelectorAll('.plate').forEach(p => p.remove());
+
+  const plateTrue = document.createElement('div');
+  plateTrue.className = 'plate true';
+  plateTrue.textContent = q.text;
+  plateTrue.addEventListener('click', () => checkAnswer(true, plateTrue));
+  game.appendChild(plateTrue);
+
+  const plateFalse = document.createElement('div');
+  plateFalse.className = 'plate false';
+  plateFalse.textContent = q.text;
+  plateFalse.addEventListener('click', () => checkAnswer(false, plateFalse));
+  game.appendChild(plateFalse);
+}
+
+function checkAnswer(choice, plate) {
+  plate.style.transform = 'scale(0)';
+  plate.style.opacity = '0';
+  setTimeout(() => plate.remove(), 300);
+
+  const q = questions[currentQuestion];
+  if (choice === q.answer) {
+    score++;
+    scoreEl.textContent = `${playerName} - Puntaje: ${score}`;
+    currentQuestion++;
+    setTimeout(loadQuestion, 350);
+  } else {
+    document.querySelectorAll('.plate').forEach(p => p.remove());
+    setTimeout(() => { lostScreen.style.display = 'flex'; }, 350);
+  }
+}
+
+function restartGame() {
+  document.getElementById('gameContainer').style.display = 'none';
+  document.getElementById('menu').style.display = 'block';
+  document.getElementById('playerName').value = "";
+}
+</script>
+</body>
+</html>
